@@ -1,1 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LearnFlow | Future of Learning</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <aside class="sidebar">
+            <div class="logo">
+                <div class="logo-icon"></div>
+                <span>Learn<span class="flow-text">Flow</span></span>
+            </div>
+            <nav>
+                <ul class="nav-links">
+                    <li class="active" data-section="dashboard"><i data-lucide="layout-dashboard"></i> Dashboard</li>
+                    <li data-section="courses"><i data-lucide="book-open"></i> Courses</li>
+                    <li data-section="assignments"><i data-lucide="file-text"></i> Assignments</li>
+                    <li data-section="quiz"><i data-lucide="help-circle"></i> Quiz</li>
+                    <li data-section="profile"><i data-lucide="user"></i> Profile</li>
+                </ul>
+            </nav>
+        </aside>
 
+        <main class="main-content">
+            <header class="top-bar">
+                <h2 id="section-title">Dashboard</h2>
+                <div class="header-actions">
+                    <button id="theme-toggle" class="icon-btn"><i data-lucide="sun"></i></button>
+                    <div class="user-badge">
+                        <span>Alex Rivera</span>
+                        <div class="avatar"></div>
+                    </div>
+                </div>
+            </header>
+
+            <section id="dynamic-area" class="fade-in">
+                </section>
+        </main>
+    </div>
+
+    <div id="video-modal" class="modal">
+        <div class="modal-content glass-card">
+            <span class="close-modal">&times;</span>
+            <div class="video-placeholder">
+                <i data-lucide="play-circle" size="64"></i>
+                <p>Streaming Course Content...</p>
+            </div>
+            <div class="modal-info">
+                <h3 id="modal-title">Course Lesson</h3>
+                <div class="progress-container">
+                    <div class="progress-bar" id="modal-progress" style="width: 35%"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.7.0/vanilla-tilt.min.js"></script>
+    <script src="js/script.js"></script>
+</body>
+</html>
