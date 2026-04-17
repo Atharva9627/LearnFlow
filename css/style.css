@@ -65,6 +65,7 @@ body {
     transition: 0.2s ease;
     font-size: 0.95rem;
 }
+
 .nav-item {
     cursor: pointer; /* Makes the mouse turn into a hand */
     user-select: none;
@@ -110,7 +111,7 @@ body {
 .search-box {
     background: rgba(255,255,255,0.03);
     border: 1px solid var(--glass-border);
-    padding: 10px 18px;
+    padding: 10px 188px;
     border-radius: 12px;
     display: flex;
     align-items: center;
@@ -204,6 +205,7 @@ input[type="text"] {
     letter-spacing: 5px;
     margin-top: 8px;
 }
+
 .card-header {
     display: flex;
     align-items: center;
@@ -213,4 +215,94 @@ input[type="text"] {
 
 .card h3 {
     margin-bottom: 0; /* Align with icon */
+}
+
+/* --- 8. NEW: Intro Page (Landing) Styles --- */
+
+/* Override for index.php to remove the dashboard's flex/sidebar layout */
+body.intro-page {
+    display: block; 
+    overflow-x: hidden;
+    background: radial-gradient(circle at top right, #1e1b4b, #09090b);
+}
+
+.intro-navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 25px 8%;
+    background: rgba(15, 15, 20, 0.8);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--glass-border);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+/* Login button in the corner */
+.intro-login-btn {
+    background: var(--primary);
+    color: white;
+    padding: 12px 28px;
+    border-radius: 12px;
+    text-decoration: none;
+    font-weight: 700;
+    transition: 0.3s ease;
+    box-shadow: var(--glow);
+    border: 1px solid rgba(255,255,255,0.1);
+}
+
+.intro-login-btn:hover {
+    background: var(--primary-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 0 30px rgba(99, 102, 241, 0.4);
+}
+
+.intro-hero {
+    text-align: center;
+    padding: 100px 20px;
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.intro-hero h1 {
+    font-size: clamp(2.5rem, 5vw, 4rem);
+    font-weight: 900;
+    margin-bottom: 20px;
+    background: linear-gradient(to right, #fff, var(--primary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.intro-hero p {
+    font-size: 1.2rem;
+    color: var(--text-dim);
+    line-height: 1.6;
+}
+
+.intro-features {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 30px;
+    padding: 40px 8% 100px;
+}
+
+.feature-card {
+    background: var(--bg-card);
+    border: 1px solid var(--glass-border);
+    padding: 40px;
+    border-radius: 28px;
+    text-align: center;
+    transition: 0.4s ease;
+}
+
+.feature-card:hover {
+    border-color: var(--primary);
+    transform: translateY(-10px);
+    background: rgba(99, 102, 241, 0.05);
+}
+
+.feature-card i {
+    color: var(--primary);
+    margin-bottom: 20px;
 }
