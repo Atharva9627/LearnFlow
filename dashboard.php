@@ -1,14 +1,15 @@
 <?php
 session_start();
 
-// PROTECTION: If NOT logged in, kick back to login page
+// 1. PROTECTION: If not logged in, kick back to login page
+// This ensures only authorized users see the dashboard
 if (!isset($_SESSION['user_id'])) {
     header("Location: auth.php");
     exit();
 }
 
 $userName = $_SESSION['user_name'];
-$userRole = $_SESSION['role']; 
+$userRole = $_SESSION['role']; // 'teacher' or 'student'
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -18,12 +19,52 @@ $userRole = $_SESSION['role'];
     <title>LearnFlow | Dashboard</title>
     <link rel="stylesheet" href="css/style.css">
     <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        /* Modern Dashboard Layout Fixes */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            padding: 20px;
+        }
+        .card {
+            background: var(--bg-card);
+            padding: 25px;
+            border-radius: 20px;
+            border: 1px solid var(--glass-border);
+            transition: 0.3s;
+        }
+        .success-box {
+            background: rgba(75, 255, 75, 0.1);
+            border: 1px dashed #4bff4b;
+            padding: 15px;
+            border-radius: 12px;
+            margin-top: 15px;
+            text-align: center;
+        }
+        .invite-code {
+            font-size: 1.8rem;
+            color: #4bff4b;
+            font-weight: bold;
+            letter-spacing: 3px;
+            display: block;
+            margin-top: 5px;
+        }
+        .role-badge {
+            background: var(--primary);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            text-transform: capitalize;
+        }
+    </style>
 </head>
 <body>
 
-    <div class="app-container" style="display: flex; width: 100%;">
+    <div class="app-container">
         <aside class="sidebar">
             <div class="logo">
+                <div class="logo-icon"></div>
                 <span>Learn<span class="flow-text">Flow</span></span>
             </div>
             
@@ -59,42 +100,63 @@ $userRole = $_SESSION['role'];
                 <div class="user-profile">
                     <span class="role-badge"><?php echo $userRole; ?></span>
                     <span class="user-name"><?php echo htmlspecialchars($userName); ?></span>
-                    <div class="avatar" style="width:35px; height:35px; background:#333; border-radius:50%;"></div>
+                    <div class="avatar"></div>
                 </div>
             </header>
 
+            <?php if (isset($_GET['status']) && $_GET['status'] === 'quiz_completed'): ?>
+                <div class="card" style="background: rgba(16, 185, 129, 0.2); border: 1px solid #10b981; margin: 20px;">
+                    <h3 style="color: #10b981;">Quiz Submitted!</h3>
+                    <p>You scored <strong><?php echo $_GET['score']; ?></strong> out of <strong><?php echo $_GET['total']; ?></strong>.</p>
+                </div>
+            <?php endif; ?>
+
             <section class="dashboard-grid">
+                
                 <?php if ($userRole === 'teacher'): ?>
                     <div class="card">
                         <h3><i data-lucide="plus-circle"></i> Create New Class</h3>
+                        <p style="color: var(--text-dim); margin: 10px 0;">Start a new session for your students.</p>
+                        
                         <form action="backend/create_class.php" method="POST">
-                            <input type="text" name="class_name" placeholder="e.g., Computer Science 101" required>
-                            <button type="submit" class="btn-primary">Generate Invite Code</button>
+                            <input type="text" name="class_name" placeholder="e.g., Computer Science 101" required 
+                                   style="width: 100%; padding: 12px; margin-bottom: 10px; background: rgba(0,0,0,0.2); border: 1px solid var(--glass-border); color: white; border-radius: 8px;">
+                            <button type="submit" class="btn-primary" style="width: 100%;">Generate Invite Code</button>
                         </form>
-                        <?php if (isset($_GET['code'])): ?>
+
+                        <?php if (isset($_GET['status']) && $_GET['status'] == 'class_created'): ?>
                             <div class="success-box">
-                                <p>Code: <span class="invite-code"><?php echo $_GET['code']; ?></span></p>
+                                <p>Class Created! Share this code:</p>
+                                <span class="invite-code"><?php echo $_GET['code']; ?></span>
                             </div>
                         <?php endif; ?>
                     </div>
-                <?php else: ?>
+                <?php endif; ?>
+
+                <?php if ($userRole === 'student'): ?>
                     <div class="card">
                         <h3><i data-lucide="user-plus"></i> Join a Class</h3>
+                        <p style="color: var(--text-dim); margin: 10px 0;">Enter the 6-digit code from your teacher.</p>
+                        
                         <form action="backend/join_class.php" method="POST">
-                            <input type="text" name="invite_code" maxlength="6" placeholder="Enter 6-Digit Code" required style="text-transform: uppercase;">
-                            <button type="submit" class="btn-primary">Join Class</button>
+                            <input type="text" name="invite_code" maxlength="6" placeholder="Enter Code (e.g. A1B2C3)" required 
+                                   style="width: 100%; padding: 12px; margin-bottom: 10px; background: rgba(0,0,0,0.2); border: 1px solid var(--glass-border); color: white; border-radius: 8px; text-transform: uppercase;">
+                            <button type="submit" class="btn-primary" style="width: 100%;">Join Class</button>
                         </form>
                     </div>
                 <?php endif; ?>
 
                 <div class="card">
                     <h3><i data-lucide="activity"></i> Recent Activity</h3>
-                    <p style="color: var(--text-dim); margin-top:15px;">No recent activity to show yet.</p>
+                    <p style="color: var(--text-dim); padding-top: 15px;">No recent activity to show yet.</p>
                 </div>
+
             </section>
         </main>
     </div>
 
-    <script>lucide.createIcons();</script>
+    <script>
+        lucide.createIcons();
+    </script>
 </body>
 </html>
