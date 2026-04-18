@@ -8,7 +8,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'teacher') {
 }
 
 $userId = $_SESSION['user_id'];
-$stmt = $pdo->prepare("SELECT id, class_name FROM classes WHERE teacher_id = ?");
+$stmt = $conn->prepare("SELECT id, class_name FROM classes WHERE teacher_id = ?");
 $stmt->execute([$userId]);
 $myClasses = $stmt->fetchAll();
 ?>

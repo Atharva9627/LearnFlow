@@ -14,7 +14,7 @@ $userName = $_SESSION['user_name'] ?? 'Teacher';
 
 // 2. Fetch Results using 'u.name' to match your database
 try {
-    $stmt = $pdo->prepare("
+    $stmt = $conn->prepare("
         SELECT u.name, q.quiz_title, r.score, r.total_questions, r.submitted_at 
         FROM quiz_results r
         JOIN users u ON r.user_id = u.id

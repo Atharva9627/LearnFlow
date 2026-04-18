@@ -19,15 +19,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $questions = $_POST['questions']; 
 
     try {
-        $pdo->beginTransaction();
+        $conn->beginTransaction();
 
         // 2. Insert the Quiz Header
-        $stmt = $pdo->prepare("INSERT INTO quizzes (class_id, teacher_id, quiz_title) VALUES (?, ?, ?)");
+        $stmt = $conn->prepare("INSERT INTO quizzes (class_id, teacher_id, quiz_title) VALUES (?, ?, ?)");
         $stmt->execute([$classId, $teacherId, $title]);
-        $quizId = $pdo->lastInsertId();
+        $quizId = $conn->lastInsertId();
 
         // 3. Prepare the Question Insert
-        $qStmt = $pdo->prepare("INSERT INTO questions (quiz_id, question_text, option_a, option_b, option_c, option_d, correct_option) VALUES (?, ?, ?, ?, ?, ?, ?)");
+        $qStmt = $conn->prepare("INSERT INTO questions (quiz_id, question_text, option_a, option_b, option_c, option_d, correct_option) VALUES (?, ?, ?, ?, ?, ?, ?)");
         
         // 4. Loop through the array of questions
         foreach ($questions as $q) {
@@ -42,14 +42,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             ]);
         }
 
-        $pdo->commit();
+        $conn->commit();
         
         // 5. Redirect back to dashboard on success
         header("Location: ../index.php?status=quiz_created");
         exit();
 
     } catch (Exception $e) {
-        $pdo->rollBack();
+        $conn->rollBack();
         // This will print the error instead of a blank screen
         die("Database Error: " . $e->getMessage());
     }

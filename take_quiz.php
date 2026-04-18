@@ -1,8 +1,8 @@
 <?php
 session_start();
-require 'backend/db_connect.php';
+require 'backend/db_connect.php'; // Ensure this matches your connection file
 
-// Security: Ensure only students can access this, and they must be logged in
+// Security: Ensure only students can access this
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'student') {
     header("Location: auth.php");
     exit();
@@ -11,11 +11,12 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'student') {
 $userId = $_SESSION['user_id'];
 $userName = $_SESSION['user_name'];
 
-// Fetch Quizzes AND check if student has already submitted them
+// Fetch Quizzes AND check for existing scores in the quiz_scores table
 try {
-    $stmt = $pdo->prepare("
-        SELECT q.id as quiz_id, q.quiz_title, c.class_name,
-        (SELECT COUNT(*) FROM quiz_results r WHERE r.quiz_id = q.id AND r.user_id = ?) as attempt_count
+    // Note: I'm using $conn here as per our previous backend scripts
+    $stmt = $conn->prepare("
+        SELECT q.id as quiz_id, q.title as quiz_title, c.class_name,
+        (SELECT COUNT(*) FROM quiz_scores s WHERE s.quiz_id = q.id AND s.student_id = ?) as attempt_count
         FROM quizzes q
         JOIN classes c ON q.class_id = c.id
         JOIN enrollments e ON c.id = e.class_id
@@ -23,9 +24,10 @@ try {
         ORDER BY q.created_at DESC
     ");
     $stmt->execute([$userId, $userId]);
-    $quizzes = $stmt->fetchAll();
+    $quizzes = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
     $quizzes = [];
+    // echo "Error: " . $e->getMessage(); // Uncomment for debugging
 }
 ?>
 
@@ -42,7 +44,6 @@ try {
             background: rgba(16, 185, 129, 0.1);
             color: #10b981;
             border: 1px solid #10b981;
-            cursor: not-allowed;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -51,7 +52,21 @@ try {
             border-radius: 8px;
             text-decoration: none;
             font-weight: 600;
+            margin-bottom: 10px;
         }
+        .btn-view-leaderboard {
+            display: block;
+            text-align: center;
+            background: rgba(251, 191, 36, 0.1);
+            color: #fbbf24;
+            border: 1px solid #fbbf24;
+            padding: 10px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: 0.3s;
+        }
+        .btn-view-leaderboard:hover { background: #fbbf24; color: #000; }
     </style>
 </head>
 <body>
@@ -59,7 +74,7 @@ try {
         <aside class="sidebar">
             <div class="logo">Learn<span class="flow-text">Flow</span></div>
             <nav class="nav-menu">
-                <a href="index.php" class="nav-item"><i data-lucide="layout-dashboard"></i> Dashboard</a>
+                <a href="dashboard.php" class="nav-item"><i data-lucide="layout-dashboard"></i> Dashboard</a>
                 <a href="my_classes.php" class="nav-item"><i data-lucide="book-open"></i> My Classes</a>
                 <a href="take_quiz.php" class="nav-item active"><i data-lucide="pen-tool"></i> Take Quiz</a>
                 <a href="leaderboard.php" class="nav-item"><i data-lucide="trophy"></i> Leaderboard</a>
@@ -78,10 +93,10 @@ try {
 
             <div class="dashboard-grid">
                 <?php if (empty($quizzes)): ?>
-                    <div class="card" style="grid-column: span 2; text-align: center;">
+                    <div class="card" style="grid-column: span 2; text-align: center; padding: 50px;">
                         <i data-lucide="info" style="width: 48px; height: 48px; margin-bottom: 15px; opacity: 0.5;"></i>
-                        <h3>No Quizzes Available</h3>
-                        <p style="color: var(--text-dim);">Join a class or wait for your teacher to assign a quiz.</p>
+                        <h3>No Quizzes Assigned</h3>
+                        <p style="color: var(--text-dim);">Join a class or wait for your teacher to post a quiz.</p>
                     </div>
                 <?php else: ?>
                     <?php foreach ($quizzes as $quiz): ?>
@@ -103,8 +118,11 @@ try {
                             <div style="margin-top: 20px;">
                                 <?php if ($quiz['attempt_count'] > 0): ?>
                                     <div class="btn-completed">
-                                        <i data-lucide="lock" style="width: 16px;"></i> Attempt Finished
+                                        <i data-lucide="lock" style="width: 16px;"></i> Completed
                                     </div>
+                                    <a href="leaderboard.php?quiz_id=<?php echo $quiz['quiz_id']; ?>" class="btn-view-leaderboard">
+                                        <i data-lucide="bar-chart-2"></i> View Leaderboard
+                                    </a>
                                 <?php else: ?>
                                     <a href="quiz_view.php?id=<?php echo $quiz['quiz_id']; ?>" class="btn-primary" style="display: block; text-align: center; text-decoration: none;">
                                         Start Quiz
@@ -118,8 +136,6 @@ try {
         </main>
     </div>
 
-    <script>
-        lucide.createIcons();
-    </script>
+    <script>lucide.createIcons();</script>
 </body>
 </html>
