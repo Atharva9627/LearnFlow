@@ -11,6 +11,9 @@ $userId = $_SESSION['user_id'];
 $userRole = $_SESSION['role'];
 $userName = $_SESSION['user_name'];
 
+// ADDED: Detect if a class is currently selected from the URL
+$current_class_id = isset($_GET['class_id']) ? $_GET['class_id'] : null;
+
 // Fetch classes based on role
 try {
     // FIX: Using $conn to match your standardized connection
@@ -19,8 +22,8 @@ try {
         $stmt->execute([$userId]);
     } else {
         $stmt = $conn->prepare("SELECT c.* FROM classes c 
-                               JOIN enrollments e ON c.id = e.class_id 
-                               WHERE e.student_id = ? ORDER BY e.joined_at DESC");
+                                JOIN enrollments e ON c.id = e.class_id 
+                                WHERE e.student_id = ? ORDER BY e.joined_at DESC");
         $stmt->execute([$userId]);
     }
     $classes = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -76,19 +79,38 @@ try {
                     <i data-lucide="layout-dashboard"></i> Dashboard
                 </a>
                 
-                <a href="my_classes.php" class="nav-item active">
+                <a href="my_classes.php" class="nav-item <?= !isset($current_class_id) ? 'active' : '' ?>">
                     <i data-lucide="book-open"></i> My Classes
                 </a>
-                
-                <?php if ($userRole === 'teacher'): ?>
-                    <a href="assignments.php" class="nav-item"><i data-lucide="clipboard-list"></i> Assignments</a>
-                    <a href="gradebook.php" class="nav-item"><i data-lucide="bar-chart-3"></i> Gradebook</a>
-                <?php else: ?>
-                    <a href="take_quiz.php" class="nav-item"><i data-lucide="pen-tool"></i> Take Quiz</a>
-                    <a href="leaderboard.php" class="nav-item"><i data-lucide="trophy"></i> Leaderboard</a>
+
+                <?php if ($current_class_id): ?>
+                    <div class="sidebar-divider" style="margin: 15px 0; border-top: 1px solid var(--glass-border);"></div>
+                    <p style="padding-left: 20px; font-size: 0.7rem; color: var(--text-dim); text-transform: uppercase;">Class Options</p>
+                    
+                    <?php if ($userRole === 'teacher'): ?>
+                        <a href="create_quiz.php?class_id=<?= $current_class_id ?>" class="nav-item">
+                            <i data-lucide="plus-square"></i> Give Quiz
+                        </a>
+                        <a href="assignments.php?class_id=<?= $current_class_id ?>" class="nav-item">
+                            <i data-lucide="clipboard-list"></i> Assignments
+                        </a>
+                        <a href="gradebook.php?class_id=<?= $current_class_id ?>" class="nav-item">
+                            <i data-lucide="bar-chart-3"></i> Gradebook
+                        </a>
+                        <a href="leaderboard.php?class_id=<?= $current_class_id ?>" class="nav-item">
+                            <i data-lucide="trophy"></i> Leaderboard
+                        </a>
+                    <?php else: ?>
+                        <a href="take_quiz.php?class_id=<?= $current_class_id ?>" class="nav-item">
+                            <i data-lucide="pen-tool"></i> Take Quiz
+                        </a>
+                        <a href="leaderboard.php?class_id=<?= $current_class_id ?>" class="nav-item">
+                            <i data-lucide="trophy"></i> Leaderboard
+                        </a>
+                    <?php endif; ?>
                 <?php endif; ?>
 
-                <a href="backend/logout.php" class="nav-item logout-link">
+                <a href="backend/logout.php" class="nav-item logout-link" style="margin-top: auto;">
                     <i data-lucide="log-out"></i> Logout
                 </a>
             </nav>
@@ -122,7 +144,7 @@ try {
                                     Status: <span style="color: #22c55e;">Enrolled</span>
                                 <?php endif; ?>
                             </p>
-                            <a href="dashboard.php?class_id=<?php echo $class['id']; ?>" class="btn-primary" style="display: block; text-align: center; text-decoration: none;">View Materials</a>
+                            <a href="my_classes.php?class_id=<?php echo $class['id']; ?>" class="btn-primary" style="display: block; text-align: center; text-decoration: none;">Enter Class</a>
                         </div>
                     <?php endforeach; ?>
                 <?php endif; ?>

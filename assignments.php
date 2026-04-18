@@ -2,115 +2,107 @@
 session_start();
 require 'backend/db_connect.php';
 
-if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'teacher') {
-    header("Location: index.php");
+if (!isset($_SESSION['user_id'])) {
+    header("Location: auth.php");
     exit();
 }
 
+// Sidebar & Role Variables
 $userId = $_SESSION['user_id'];
-$stmt = $conn->prepare("SELECT id, class_name FROM classes WHERE teacher_id = ?");
-$stmt->execute([$userId]);
-$myClasses = $stmt->fetchAll();
+$userRole = $_SESSION['role'];
+$userName = $_SESSION['user_name'];
+$current_class_id = $_GET['class_id'] ?? null;
+
+if (!$current_class_id) {
+    header("Location: my_classes.php");
+    exit();
+}
+
+// Fetch Announcements/Reminders for this specific class
+$stmt = $conn->prepare("SELECT * FROM announcements WHERE class_id = ? ORDER BY created_at DESC");
+$stmt->execute([$current_class_id]);
+$announcements = $stmt->fetchAll();
 ?>
 
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Create Quiz | LearnFlow</title>
+    <title>Assignments & Announcements | LearnFlow</title>
     <link rel="stylesheet" href="css/style.css">
     <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        .assignment-grid { display: grid; grid-template-columns: 1fr; gap: 20px; margin-top: 20px; }
+        .announcement-card { background: rgba(255, 255, 255, 0.03); border: 1px solid var(--glass-border); padding: 20px; border-radius: 15px; margin-bottom: 15px; }
+        .announcement-badge { background: var(--primary); color: white; padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; margin-bottom: 10px; display: inline-block; }
+        .post-box { background: rgba(255,255,255,0.05); padding: 25px; border-radius: 15px; border: 1px solid var(--primary); margin-bottom: 30px; }
+    </style>
 </head>
 <body>
     <div class="app-container">
         <aside class="sidebar">
             <div class="logo">Learn<span class="flow-text">Flow</span></div>
             <nav class="nav-menu">
-                <a href="index.php" class="nav-item"><i data-lucide="layout-dashboard"></i> Dashboard</a>
-                <a href="assignments.php" class="nav-item active"><i data-lucide="clipboard-list"></i> Assignments</a>
-                <a href="backend/logout.php" class="nav-item logout-link"><i data-lucide="log-out"></i> Logout</a>
+                <a href="dashboard.php" class="nav-item"><i data-lucide="layout-dashboard"></i> Dashboard</a>
+                <a href="my_classes.php" class="nav-item"><i data-lucide="book-open"></i> My Classes</a>
+                
+                <div class="sidebar-divider"></div>
+                <?php if ($userRole === 'teacher'): ?>
+                    <a href="create_quiz.php?class_id=<?= $current_class_id ?>" class="nav-item"><i data-lucide="plus-circle"></i> Create Quiz</a>
+                <?php endif; ?>
+                <a href="assignments.php?class_id=<?= $current_class_id ?>" class="nav-item active"><i data-lucide="clipboard-list"></i> Assignments</a>
+                <a href="leaderboard.php?class_id=<?= $current_class_id ?>" class="nav-item"><i data-lucide="trophy"></i> Leaderboard</a>
+                
+                <a href="backend/logout.php" class="nav-item logout-link" style="margin-top: auto;"><i data-lucide="log-out"></i> Logout</a>
             </nav>
         </aside>
 
         <main class="main-content">
-            <header class="top-bar"><h1>Create Multi-Question Quiz</h1></header>
+            <header class="top-bar">
+                <h1>Classroom Stream</h1>
+                <div class="user-profile"><span><?= htmlspecialchars($userName) ?></span></div>
+            </header>
 
-            <div class="card" style="max-width: 800px; margin: 20px auto;">
-                <form action="backend/save_quiz.php" method="POST" id="quizForm">
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px;">
-                        <div>
-                            <label>Target Class</label>
-                            <select name="class_id" required style="width:100%; padding:12px; margin-top:8px; border-radius:8px; background:#1e1e2e; color:white; border:1px solid #333;">
-                                <?php foreach ($myClasses as $class): ?>
-                                    <option value="<?php echo $class['id']; ?>"><?php echo htmlspecialchars($class['class_name']); ?></option>
-                                <?php endforeach; ?>
+            <?php if ($userRole === 'teacher'): ?>
+                <div class="post-box">
+                    <h3 style="margin-bottom: 15px;">Post a Reminder or Announcement</h3>
+                    <form action="backend/post_material.php" method="POST">
+                        <input type="hidden" name="class_id" value="<?= $current_class_id ?>">
+                        <div class="input-group" style="margin-bottom: 15px;">
+                            <textarea name="content" rows="3" placeholder="What's on your mind? (e.g., Reminder: Homework due tomorrow!)" required style="width:100%; padding:15px; background:#0f172a; border:1px solid var(--glass-border); color:white; border-radius:10px;"></textarea>
+                        </div>
+                        <div style="display:flex; justify-content: space-between; align-items:center;">
+                            <select name="type" style="padding:10px; border-radius:8px; background:#1e293b; color:white; border:none;">
+                                <option value="announcement">Announcement</option>
+                                <option value="reminder">Reminder</option>
                             </select>
+                            <button type="submit" class="btn-primary" style="padding:10px 30px; border:none; cursor:pointer;">Post to Class</button>
                         </div>
-                        <div>
-                            <label>Quiz Title</label>
-                            <input type="text" name="quiz_title" placeholder="e.g., Final Exam" required>
+                    </form>
+                </div>
+            <?php endif; ?>
+
+            <div class="assignment-grid">
+                <?php if (empty($announcements)): ?>
+                    <div class="card" style="text-align: center; color: var(--text-dim);">
+                        <p>No announcements or reminders yet.</p>
+                    </div>
+                <?php else: ?>
+                    <?php foreach ($announcements as $post): ?>
+                        <div class="announcement-card">
+                            <span class="announcement-badge" style="background: <?= $post['type'] === 'reminder' ? '#f59e0b' : '#6366f1' ?>;">
+                                <?= ucfirst($post['type']) ?>
+                            </span>
+                            <p style="font-size: 1.1rem; margin: 10px 0;"><?= htmlspecialchars($post['content']) ?></p>
+                            <span style="font-size: 0.8rem; color: var(--text-dim);">
+                                Posted on <?= date('M d, Y', strtotime($post['created_at'])) ?>
+                            </span>
                         </div>
-                    </div>
-
-                    <div id="questions-container">
-                        <div class="question-item card" style="background: rgba(255,255,255,0.02); margin-bottom: 20px; border: 1px solid #333;">
-                            <h3>Question 1</h3>
-                            <input type="text" name="questions[0][text]" placeholder="Enter Question" required style="margin: 10px 0;">
-                            
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                                <input type="text" name="questions[0][a]" placeholder="Option A" required>
-                                <input type="text" name="questions[0][b]" placeholder="Option B" required>
-                                <input type="text" name="questions[0][c]" placeholder="Option C" required>
-                                <input type="text" name="questions[0][d]" placeholder="Option D" required>
-                            </div>
-
-                            <label style="display:block; margin-top:10px;">Correct Answer:</label>
-                            <select name="questions[0][correct]" required style="width:100%; padding:10px; border-radius:8px; background:#1e1e2e; color:white;">
-                                <option value="A">A</option><option value="B">B</option>
-                                <option value="C">C</option><option value="D">D</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div style="display: flex; gap: 10px; margin-top: 20px;">
-                        <button type="button" onclick="addQuestion()" class="btn-secondary" style="background: #333; flex: 1;">
-                            <i data-lucide="plus-circle"></i> Add Another Question
-                        </button>
-                        <button type="submit" class="btn-primary" style="flex: 1;">Save Quiz</button>
-                    </div>
-                </form>
+                    <?php endforeach; ?>
+                <?php endif; ?>
             </div>
         </main>
     </div>
-
-    <script>
-        let questionCount = 1;
-        function addQuestion() {
-            const container = document.getElementById('questions-container');
-            const div = document.createElement('div');
-            div.className = 'question-item card';
-            div.style = "background: rgba(255,255,255,0.02); margin-bottom: 20px; border: 1px solid #333;";
-            
-            div.innerHTML = `
-                <h3>Question ${questionCount + 1}</h3>
-                <input type="text" name="questions[${questionCount}][text]" placeholder="Enter Question" required style="margin: 10px 0;">
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                    <input type="text" name="questions[${questionCount}][a]" placeholder="Option A" required>
-                    <input type="text" name="questions[${questionCount}][b]" placeholder="Option B" required>
-                    <input type="text" name="questions[${questionCount}][c]" placeholder="Option C" required>
-                    <input type="text" name="questions[${questionCount}][d]" placeholder="Option D" required>
-                </div>
-                <label style="display:block; margin-top:10px;">Correct Answer:</label>
-                <select name="questions[${questionCount}][correct]" required style="width:100%; padding:10px; border-radius:8px; background:#1e1e2e; color:white;">
-                    <option value="A">A</option><option value="B">B</option>
-                    <option value="C">C</option><option value="D">D</option>
-                </select>
-            `;
-            container.appendChild(div);
-            questionCount++;
-            lucide.createIcons(); // Re-render icons
-        }
-        lucide.createIcons();
-    </script>
+    <script>lucide.createIcons();</script>
 </body>
 </html>

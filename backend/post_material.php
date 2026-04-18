@@ -1,19 +1,17 @@
 <?php
 session_start();
-include 'db_connect.php';
+require 'db_connect.php';
 
-if ($_SERVER['REQUEST_METHOD'] == 'POST' && $_SESSION['role'] == 'teacher') {
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && $_SESSION['role'] === 'teacher') {
     $class_id = $_POST['class_id'];
-    $type = $_POST['type']; // 'announcement', 'assignment', or 'quiz'
-    $title = $_POST['title'];
     $content = $_POST['content'];
+    $type = $_POST['type'];
 
-    $stmt = $conn->prepare("INSERT INTO class_materials (class_id, type, title, content) VALUES (?, ?, ?, ?)");
-    
-    if ($stmt->execute([$class_id, $type, $title, $content])) {
-        header("Location: ../dashboard.php?success=posted");
+    $stmt = $conn->prepare("INSERT INTO announcements (class_id, content, type) VALUES (?, ?, ?)");
+    if ($stmt->execute([$class_id, $content, $type])) {
+        header("Location: ../assignments.php?class_id=" . $class_id);
     } else {
-        header("Location: ../dashboard.php?error=failed");
+        echo "Error posting announcement.";
     }
 }
 ?>
