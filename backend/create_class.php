@@ -10,7 +10,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && $_SESSION['role'] == 'teacher') {
     $inviteCode = strtoupper(substr(md5(uniqid(mt_rand(), true)), 0, 6));
 
     try {
-        $stmt = $pdo->prepare("INSERT INTO classes (class_name, teacher_id, invite_code) VALUES (?, ?, ?)");
+        $stmt = $conn->prepare("INSERT INTO classes (class_name, teacher_id, invite_code) VALUES (?, ?, ?)");
         $stmt->execute([$className, $teacherId, $inviteCode]);
         
         // Redirect back to dashboard with a success message

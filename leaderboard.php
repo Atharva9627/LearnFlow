@@ -1,11 +1,12 @@
 <?php
-// 1. Setup & Protection
+// 1. Setup & Error Reporting
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
 session_start();
-require_once 'backend/db_connect.php'; // Standardized $conn is defined here
+// Standardized $conn is defined in db_connect.php
+require_once 'backend/db_connect.php'; 
 
 if (!isset($_SESSION['user_id'])) {
     header("Location: auth.php");
@@ -14,7 +15,9 @@ if (!isset($_SESSION['user_id'])) {
 
 $userName = $_SESSION['user_name'];
 $userRole = $_SESSION['role'];
-$quiz_id = isset($_GET['quiz_id']) ? $_GET['quiz_id'] : null;
+
+// We use quiz_name to match the quiz_scores table
+$selected_quiz = isset($_GET['quiz_name']) ? $_GET['quiz_name'] : null;
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -41,6 +44,7 @@ $quiz_id = isset($_GET['quiz_id']) ? $_GET['quiz_id'] : null;
             transition: 0.3s;
         }
         .quiz-card-link:hover { border-color: var(--primary); background: rgba(255,255,255,0.1); }
+        .empty-state { color: var(--text-dim); text-align: center; padding: 20px; }
     </style>
 </head>
 <body>
@@ -64,25 +68,26 @@ $quiz_id = isset($_GET['quiz_id']) ? $_GET['quiz_id'] : null;
 
             <section class="dashboard-grid" style="grid-template-columns: 1fr;">
                 
-                <?php if (!$quiz_id): ?>
+                <?php if (!$selected_quiz): ?>
                     <div class="card">
                         <h3><i data-lucide="list"></i> Select a Quiz to see Standings</h3>
                         <div style="margin-top: 20px;">
                             <?php
-                            // Fetch quizzes based on your database structure
-                            $stmt = $conn->prepare("SELECT id, title FROM quizzes ORDER BY id DESC");
+                            // Fetching quiz_title from quizzes table
+                            $stmt = $conn->prepare("SELECT DISTINCT quiz_title FROM quizzes ORDER BY quiz_title ASC");
                             $stmt->execute();
                             $quizzes = $stmt->fetchAll();
 
                             if (count($quizzes) > 0) {
                                 foreach ($quizzes as $q) {
-                                    echo "<a href='leaderboard.php?quiz_id={$q['id']}' class='quiz-card-link'>
-                                            <div style='color: var(--primary); font-weight: bold;'>{$q['title']}</div>
-                                            <small style='color: var(--text-dim);'>Click to view rankings</small>
+                                    // Pass quiz_name in the URL
+                                    echo "<a href='leaderboard.php?quiz_name=" . urlencode($q['quiz_title']) . "' class='quiz-card-link'>
+                                            <div style='color: var(--primary); font-weight: bold;'>" . htmlspecialchars($q['quiz_title']) . "</div>
+                                            <small style='color: var(--text-dim);'>Click to view student rankings</small>
                                           </a>";
                                 }
                             } else {
-                                echo "<p style='color: var(--text-dim);'>No quizzes available yet.</p>";
+                                echo "<p class='empty-state'>No quizzes have been created yet.</p>";
                             }
                             ?>
                         </div>
@@ -91,13 +96,8 @@ $quiz_id = isset($_GET['quiz_id']) ? $_GET['quiz_id'] : null;
                 <?php else: ?>
                     <div class="card">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                            <?php
-                                $titleStmt = $conn->prepare("SELECT title FROM quizzes WHERE id = ?");
-                                $titleStmt->execute([$quiz_id]);
-                                $quizTitle = $titleStmt->fetchColumn();
-                            ?>
-                            <h3><i data-lucide="medal"></i> Rankings: <?php echo htmlspecialchars($quizTitle); ?></h3>
-                            <a href="leaderboard.php" class="btn-primary" style="padding: 8px 15px; font-size: 0.8rem;">View All Quizzes</a>
+                            <h3><i data-lucide="medal"></i> Rankings: <?php echo htmlspecialchars($selected_quiz); ?></h3>
+                            <a href="leaderboard.php" class="btn-primary" style="padding: 8px 15px; font-size: 0.8rem; text-decoration:none; background:var(--primary); color:white; border-radius:5px;">View All Quizzes</a>
                         </div>
                         
                         <table class="leaderboard-table">
@@ -111,32 +111,41 @@ $quiz_id = isset($_GET['quiz_id']) ? $_GET['quiz_id'] : null;
                             </thead>
                             <tbody>
                                 <?php
-                                // JOIN logic to connect scores to student names
+                                // JOIN quiz_scores with users using correct column names
                                 $stmt = $conn->prepare("
-                                    SELECT u.name, s.score, s.total_marks, s.submitted_at 
+                                    SELECT u.name, s.score, s.total_questions, s.completed_at 
                                     FROM quiz_scores s
                                     JOIN users u ON s.student_id = u.id
-                                    WHERE s.quiz_id = ?
-                                    ORDER BY s.score DESC, s.submitted_at ASC
+                                    WHERE s.quiz_name = ?
+                                    ORDER BY s.score DESC, s.completed_at ASC
                                 ");
-                                $stmt->execute([$quiz_id]);
+                                $stmt->execute([$selected_quiz]);
                                 $rank = 1;
+                                $results = $stmt->fetchAll();
 
-                                while ($row = $stmt->fetch()):
-                                    $rankClass = ($rank <= 3) ? "rank-$rank" : "";
+                                if (count($results) > 0):
+                                    foreach ($results as $row):
+                                        $rankClass = ($rank <= 3) ? "rank-$rank" : "";
                                 ?>
                                     <tr>
                                         <td class="<?php echo $rankClass; ?>">#<?php echo $rank++; ?></td>
                                         <td><strong><?php echo htmlspecialchars($row['name']); ?></strong></td>
                                         <td>
                                             <span style="color: var(--primary);"><?php echo $row['score']; ?></span> 
-                                            / <?php echo $row['total_marks']; ?>
+                                            / <?php echo $row['total_questions']; ?>
                                         </td>
                                         <td style="color: var(--text-dim); font-size: 0.8rem;">
-                                            <?php echo date('M d, H:i', strtotime($row['submitted_at'])); ?>
+                                            <?php echo date('M d, H:i', strtotime($row['completed_at'])); ?>
                                         </td>
                                     </tr>
-                                <?php endwhile; ?>
+                                <?php 
+                                    endforeach; 
+                                else:
+                                ?>
+                                    <tr>
+                                        <td colspan="4" class="empty-state">No students have completed this quiz yet.</td>
+                                    </tr>
+                                <?php endif; ?>
                             </tbody>
                         </table>
                     </div>

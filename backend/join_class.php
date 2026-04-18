@@ -16,7 +16,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['user_id'])) {
 
     try {
         // 3. Step One: Check if this class code actually exists in our 'classes' table
-        $stmt = $pdo->prepare("SELECT id FROM classes WHERE invite_code = ?");
+        $stmt = $conn->prepare("SELECT id FROM classes WHERE invite_code = ?");
         $stmt->execute([$inviteCode]);
         $class = $stmt->fetch();
 
@@ -25,7 +25,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_SESSION['user_id'])) {
 
             // 4. Step Two: Add the student to the 'enrollments' table
             // 'INSERT IGNORE' prevents an error if the student tries to join the same class twice
-            $enrollStmt = $pdo->prepare("INSERT IGNORE INTO enrollments (student_id, class_id) VALUES (?, ?)");
+            $enrollStmt = $conn->prepare("INSERT IGNORE INTO enrollments (student_id, class_id) VALUES (?, ?)");
             $result = $enrollStmt->execute([$studentId, $classId]);
 
             if ($result) {

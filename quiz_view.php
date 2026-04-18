@@ -15,12 +15,12 @@ if (!$quizId) {
 }
 
 // 1. DATABASE CHECK: See if this user has already submitted this quiz
-$checkAttempt = $pdo->prepare("SELECT id FROM quiz_results WHERE user_id = ? AND quiz_id = ?");
+$checkAttempt = $conn->prepare("SELECT id FROM quiz_results WHERE user_id = ? AND quiz_id = ?");
 $checkAttempt->execute([$userId, $quizId]);
 $alreadyAttempted = $checkAttempt->fetch();
 
 // 2. FETCH QUIZ DETAILS
-$stmt = $pdo->prepare("SELECT * FROM quizzes WHERE id = ?");
+$stmt = $conn->prepare("SELECT * FROM quizzes WHERE id = ?");
 $stmt->execute([$quizId]);
 $quiz = $stmt->fetch();
 
@@ -58,7 +58,7 @@ if (!$quiz) {
 
             <?php
             // Fetch Questions
-            $qStmt = $pdo->prepare("SELECT * FROM questions WHERE quiz_id = ?");
+            $qStmt = $conn->prepare("SELECT * FROM questions WHERE quiz_id = ?");
             $qStmt->execute([$quizId]);
             $questions = $qStmt->fetchAll();
             ?>
