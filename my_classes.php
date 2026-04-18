@@ -13,7 +13,7 @@ $userName = $_SESSION['user_name'];
 
 // Fetch classes based on role
 try {
-    // FIX: Changed $pdo to $conn to match your other backend files
+    // FIX: Using $conn to match your standardized connection
     if ($userRole === 'teacher') {
         $stmt = $conn->prepare("SELECT * FROM classes WHERE teacher_id = ? ORDER BY created_at DESC");
         $stmt->execute([$userId]);
@@ -36,6 +36,36 @@ try {
     <title>My Classes | LearnFlow</title>
     <link rel="stylesheet" href="css/style.css">
     <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        /* Floating Plus Button Styling */
+        .add-class-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            background: var(--primary);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .add-class-btn:hover {
+            transform: scale(1.1) rotate(90deg);
+            background: #4f46e5;
+        }
+
+        .add-class-btn i {
+            width: 32px;
+            height: 32px;
+        }
+    </style>
 </head>
 <body>
     <div class="app-container">
@@ -76,7 +106,7 @@ try {
             <div class="dashboard-grid">
                 <?php if (empty($classes)): ?>
                     <div class="card" style="grid-column: span 2; text-align: center;">
-                        <p>No classes found. <?php echo ($userRole === 'teacher') ? 'Create one on the dashboard!' : 'Join one using a code!'; ?></p>
+                        <p>No classes found. <?php echo ($userRole === 'teacher') ? 'Click the + button to create your first class!' : 'Join one using a code!'; ?></p>
                     </div>
                 <?php else: ?>
                     <?php foreach ($classes as $class): ?>
@@ -98,6 +128,13 @@ try {
                 <?php endif; ?>
             </div>
         </main>
+
+        <?php if ($userRole === 'teacher'): ?>
+            <a href="create_class.php" class="add-class-btn" title="Create New Class">
+                <i data-lucide="plus"></i>
+            </a>
+        <?php endif; ?>
+
     </div>
     <script>lucide.createIcons();</script>
 </body>
