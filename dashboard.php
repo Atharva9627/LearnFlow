@@ -5,8 +5,13 @@ ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
 session_start();
+$current_class_id = $_GET['class_id'] ?? $_SESSION['current_class_id'] ?? null;
+
+// If we found it in the URL, save it to the session so other pages remember it
+if (isset($_GET['class_id'])) {
+    $_SESSION['current_class_id'] = $_GET['class_id'];
+}
 // ADD THIS LINE near the top of dashboard.php
-$current_class_id = isset($_GET['class_id']) ? $_GET['class_id'] : null;
 include 'backend/db_connect.php';
 
 // PROTECTION: If not logged in, kick back to login page
