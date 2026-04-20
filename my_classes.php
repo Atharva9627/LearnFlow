@@ -94,9 +94,7 @@ try {
                         <a href="assignments.php?class_id=<?= $current_class_id ?>" class="nav-item">
                             <i data-lucide="clipboard-list"></i> Assignments
                         </a>
-                        <a href="gradebook.php?class_id=<?= $current_class_id ?>" class="nav-item">
-                            <i data-lucide="bar-chart-3"></i> Gradebook
-                        </a>
+                        
                         <a href="leaderboard.php?class_id=<?= $current_class_id ?>" class="nav-item">
                             <i data-lucide="trophy"></i> Leaderboard
                         </a>

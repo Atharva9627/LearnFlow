@@ -75,6 +75,9 @@ $teacherClasses = $stmt->fetchAll();
                     <div class="sidebar-divider"></div>
                     <a href="create_quiz.php?class_id=<?= $current_class_id ?>" class="nav-item active"><i data-lucide="plus-circle"></i> Create Quiz</a>
                     <a href="assignments.php?class_id=<?= $current_class_id ?>" class="nav-item"><i data-lucide="clipboard-list"></i> Assignments</a>
+                    <a href="leaderboard.php?class_id=<?= $current_class_id ?>" class="nav-item">
+                            <i data-lucide="trophy"></i> Leaderboard
+                        </a>
                 <?php endif; ?>
                 <a href="backend/logout.php" class="nav-item logout-link"><i data-lucide="log-out"></i> Logout</a>
             </nav>
