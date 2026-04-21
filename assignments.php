@@ -51,41 +51,48 @@ $assignments = $stmtA->fetchAll();
 <body>
     <div class="app-container">
         <aside class="sidebar">
-    <div class="logo">Learn<span class="flow-text">Flow</span></div>
-    <nav class="nav-menu">
-        <a href="dashboard.php" class="nav-item">
-            <i data-lucide="layout-dashboard"></i> Dashboard
-        </a>
-        <a href="my_classes.php" class="nav-item">
-            <i data-lucide="book-open"></i> My Classes
-        </a>
+            <div class="logo">Learn<span class="flow-text">Flow</span></div>
+            <nav class="nav-menu">
+                <a href="dashboard.php" class="nav-item">
+                    <i data-lucide="layout-dashboard"></i> Dashboard
+                </a>
+                <a href="my_classes.php" class="nav-item">
+                    <i data-lucide="book-open"></i> My Classes
+                </a>
 
-        <div class="sidebar-section">
-            <p class="section-label">CLASS OPTIONS</p>
-            
-            <a href="assignments.php?class_id=<?= $current_class_id ?>" class="nav-item">
-                <i data-lucide="clipboard-list"></i> My Assignments
-            </a>
+                <div class="sidebar-section">
+                    <p class="section-label" style="font-size: 0.7rem; color: gray; margin-top: 20px; padding-left: 15px;">CLASS OPTIONS</p>
+                    
+                    <a href="assignments.php?class_id=<?= $current_class_id ?>" class="nav-item active">
+                        <i data-lucide="clipboard-list"></i> My Assignments
+                    </a>
 
-            <a href="take_quiz.php?class_id=<?= $current_class_id ?>" class="nav-item">
-                <i data-lucide="pen-tool"></i> Take Quiz
-            </a>
+                    <?php if ($userRole === 'teacher'): ?>
+                        <a href="create_quiz.php?class_id=<?= $current_class_id ?>" class="nav-item">
+                            <i data-lucide="plus-circle"></i> Create Quiz
+                        </a>
+                    <?php elseif ($userRole === 'student'): ?>
+                        <a href="take_quiz.php?class_id=<?= $current_class_id ?>" class="nav-item">
+                            <i data-lucide="pen-tool"></i> Take Quiz
+                        </a>
+                    <?php endif; ?>
 
-            <a href="leaderboard.php?class_id=<?= $current_class_id ?>" class="nav-item">
-                <i data-lucide="trophy"></i> Leaderboard
-            </a>
-        </div>
-        <a href="backend/logout.php" class="nav-item logout-link" style="margin-top: auto;">
-            <i data-lucide="log-out"></i> Logout
-        </a>
-    </nav>
-</aside>
+                    <a href="leaderboard.php?class_id=<?= $current_class_id ?>" class="nav-item">
+                        <i data-lucide="trophy"></i> Leaderboard
+                    </a>
+                </div>
+
+                <a href="backend/logout.php" class="nav-item logout-link" style="margin-top: auto;">
+                    <i data-lucide="log-out"></i> Logout
+                </a>
+            </nav>
+        </aside>
 
         <main class="main-content">
             <header class="top-bar">
                 <h1 style="font-size: 1.5rem;">Classroom Stream & Assignments</h1>
                 <div class="user-profile">
-                    <span class="role-badge"><?= $userRole ?></span>
+                    <span class="role-badge" style="background: var(--primary); padding: 2px 8px; border-radius: 4px; font-size: 0.7rem; margin-right: 10px;"><?= strtoupper($userRole) ?></span>
                     <span><?= htmlspecialchars($userName) ?></span>
                 </div>
             </header>
@@ -113,7 +120,7 @@ $assignments = $stmtA->fetchAll();
                     <div class="assignment-list">
                         <h3><i data-lucide="list-checks"></i> Assignment Tasks</h3><br>
                         <?php if (empty($assignments)): ?>
-                            <div class="card" style="text-align:center; padding:30px;">
+                            <div class="card" style="text-align:center; padding:30px; background: rgba(255,255,255,0.02); border-radius: 15px;">
                                 <p style="color:var(--text-dim);">No assignments have been posted yet.</p>
                             </div>
                         <?php else: ?>
@@ -133,18 +140,18 @@ $assignments = $stmtA->fetchAll();
                                     <p style="margin: 15px 0; line-height: 1.6; color: var(--text-dim);"><?= nl2br(htmlspecialchars($task['description'])) ?></p>
                                     
                                     <?php if ($userRole === 'student'): ?>
-    <form action="backend/submit_work.php" method="POST" enctype="multipart/form-data" style="border-top:1px solid var(--glass-border); margin-top:15px; padding-top:15px;">
-    <input type="hidden" name="assignment_id" value="<?= $task['id'] ?>">
-    <input type="hidden" name="class_id" value="<?= $current_class_id ?>">
-        <label style="font-size: 0.8rem; color: var(--text-dim);">Your Comments/Notes:</label>
-        <textarea name="submission_text" placeholder="Type any notes for the teacher..."></textarea>
-        
-        <label style="font-size: 0.8rem; color: var(--text-dim);">Upload File (PDF, DOCX):</label>
-        <input type="file" name="assignment_file" accept=".pdf,.doc,.docx" required style="margin-top:5px;">
-        
-        <button type="submit" class="btn-primary" style="margin-top:10px;">Submit My Work</button>
-    </form>
-<?php endif; ?>
+                                        <form action="backend/submit_work.php" method="POST" enctype="multipart/form-data" style="border-top:1px solid var(--glass-border); margin-top:15px; padding-top:15px;">
+                                            <input type="hidden" name="assignment_id" value="<?= $task['id'] ?>">
+                                            <input type="hidden" name="class_id" value="<?= $current_class_id ?>">
+                                            <label style="font-size: 0.8rem; color: var(--text-dim);">Your Comments/Notes:</label>
+                                            <textarea name="submission_text" placeholder="Type any notes for the teacher..."></textarea>
+                                            
+                                            <label style="font-size: 0.8rem; color: var(--text-dim);">Upload File (PDF, DOCX):</label>
+                                            <input type="file" name="assignment_file" accept=".pdf,.doc,.docx" required style="margin-top:5px;">
+                                            
+                                            <button type="submit" class="btn-primary" style="margin-top:10px; width: 100%;">Submit My Work</button>
+                                        </form>
+                                    <?php endif; ?>
                                 </div>
                             <?php endforeach; ?>
                         <?php endif; ?>
@@ -153,15 +160,19 @@ $assignments = $stmtA->fetchAll();
 
                 <div class="stream-column">
                     <h3><i data-lucide="megaphone"></i> Notice Board</h3><br>
-                    <?php foreach ($announcements as $post): ?>
-                        <div class="announcement-card">
-                            <span class="announcement-badge" style="background: <?= $post['type'] === 'reminder' ? '#f59e0b' : '#6366f1' ?>;">
-                                <?= ucfirst($post['type']) ?>
-                            </span>
-                            <p style="font-size: 0.95rem; margin: 5px 0;"><?= htmlspecialchars($post['content']) ?></p>
-                            <span style="font-size: 0.7rem; color: var(--text-dim);"><?= date('M d', strtotime($post['created_at'])) ?></span>
-                        </div>
-                    <?php endforeach; ?>
+                    <?php if (empty($announcements)): ?>
+                         <p style="color:var(--text-dim); font-size: 0.9rem;">No announcements.</p>
+                    <?php else: ?>
+                        <?php foreach ($announcements as $post): ?>
+                            <div class="announcement-card">
+                                <span class="announcement-badge" style="background: <?= $post['type'] === 'reminder' ? '#f59e0b' : '#6366f1' ?>;">
+                                    <?= ucfirst($post['type']) ?>
+                                </span>
+                                <p style="font-size: 0.95rem; margin: 5px 0;"><?= htmlspecialchars($post['content']) ?></p>
+                                <span style="font-size: 0.7rem; color: var(--text-dim);"><?= date('M d', strtotime($post['created_at'])) ?></span>
+                            </div>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
                 </div>
             </div>
         </main>
