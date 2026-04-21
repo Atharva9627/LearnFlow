@@ -64,46 +64,36 @@ $selected_quiz_title = isset($_GET['quiz_name']) ? $_GET['quiz_name'] : "Leaderb
 </head>
 <body>
     <div class="app-container">
-        <aside class="sidebar">
-            <div class="logo">Learn<span class="flow-text">Flow</span></div>
-            <nav class="nav-menu">
-                <a href="dashboard.php" class="nav-item">
-                    <i data-lucide="layout-dashboard"></i> Dashboard
-                </a>
-                
-                <a href="my_classes.php" class="nav-item">
-                    <i data-lucide="book-open"></i> My Classes
-                </a>
+      <aside class="sidebar">
+    <div class="logo">Learn<span class="flow-text">Flow</span></div>
+    <nav class="nav-menu">
+        <a href="dashboard.php" class="nav-item">
+            <i data-lucide="layout-dashboard"></i> Dashboard
+        </a>
+        <a href="my_classes.php" class="nav-item">
+            <i data-lucide="book-open"></i> My Classes
+        </a>
 
-                <?php if ($current_class_id): ?>
-                    <div class="sidebar-divider" style="margin: 15px 0; border-top: 1px solid var(--glass-border);"></div>
-                    <p style="padding-left: 20px; font-size: 0.7rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px;">Class Options</p>
-                    
-                    <?php if ($userRole === 'teacher'): ?>
-                        <a href="create_quiz.php?class_id=<?= $current_class_id ?>" class="nav-item">
-                            <i data-lucide="plus-circle"></i> Create Quiz
-                        </a>
-                        <a href="assignments.php?class_id=<?= $current_class_id ?>" class="nav-item">
-                            <i data-lucide="clipboard-list"></i> Assignments
-                        </a>
-                        <a href="leaderboard.php?class_id=<?= $current_class_id ?>" class="nav-item active">
-                            <i data-lucide="trophy"></i> Leaderboard
-                        </a>
-                    <?php else: ?>
-                        <a href="take_quiz.php?class_id=<?= $current_class_id ?>" class="nav-item">
-                            <i data-lucide="pen-tool"></i> Take Quiz
-                        </a>
-                        <a href="leaderboard.php?class_id=<?= $current_class_id ?>" class="nav-item active">
-                            <i data-lucide="trophy"></i> Leaderboard
-                        </a>
-                    <?php endif; ?>
-                <?php endif; ?>
+        <div class="sidebar-section">
+            <p class="section-label">CLASS OPTIONS</p>
+            
+            <a href="assignments.php?class_id=<?= $current_class_id ?>" class="nav-item">
+                <i data-lucide="clipboard-list"></i> My Assignments
+            </a>
 
-                <a href="backend/logout.php" class="nav-item logout-link" style="margin-top: auto;">
-                    <i data-lucide="log-out"></i> Logout
-                </a>
-            </nav>
-        </aside>
+            <a href="take_quiz.php?class_id=<?= $current_class_id ?>" class="nav-item">
+                <i data-lucide="pen-tool"></i> Take Quiz
+            </a>
+
+            <a href="leaderboard.php?class_id=<?= $current_class_id ?>" class="nav-item">
+                <i data-lucide="trophy"></i> Leaderboard
+            </a>
+        </div>
+        <a href="backend/logout.php" class="nav-item logout-link" style="margin-top: auto;">
+            <i data-lucide="log-out"></i> Logout
+        </a>
+    </nav>
+</aside>
 
         <main class="main-content">
             <header class="top-bar">
