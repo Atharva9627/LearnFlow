@@ -2,7 +2,7 @@
 LearnFlow 🎓 | Secure Full-Stack LMS
 LearnFlow is a modern, full-stack Learning Management System designed to bridge the gap between teachers and students. Built with a focus on academic integrity and user experience, it features a secure quiz engine and a beautiful "Glassmorphism" dashboard.
 
-✨ Key Features
+✨ Key Features 
 Secure Quiz Engine: Implemented a backend "Hard Block" logic that strictly enforces a one-attempt-only policy for students.
 
 Dynamic Gradebook: Real-time scoring and performance tracking for teachers, including percentage calculation and submission timestamps.
